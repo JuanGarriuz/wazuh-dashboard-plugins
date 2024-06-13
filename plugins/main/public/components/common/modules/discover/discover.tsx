@@ -235,191 +235,191 @@ export const Discover = compose(
               title: error.name || error,
             },
           };
-          getErrorOrchestrator().handleError(options);
+                getErrorOrchestrator().handleError(options);
         }
       }
     }
 
-    getInnitialDefinitions() {
-      if (this.props.currentAgentData.id) {
-        return this.props.initialAgentColumns || this.props.initialColumns;
-      } else {
-        return this.props.initialColumns;
-      }
-    }
-    getColumns() {
-      //Extract array of terms from object
-      return this.getInnitialDefinitions().map((column) => column.field);
-    }
-    getLabel(field) {
-      const innitialLabels = this.getInnitialDefinitions().filter((value) => value.field === field);
-      if (innitialLabels.length) {
-        return innitialLabels[0].label || field;
-      } else {
-        return field;
-      }
-    }
+        getInnitialDefinitions() {
+          if (this.props.currentAgentData.id) {
+            return this.props.initialAgentColumns || this.props.initialColumns;
+          } else {
+            return this.props.initialColumns;
+          }
+        }
+        getColumns() {
+          //Extract array of terms from object
+          return this.getInnitialDefinitions().map((column) => column.field);
+        }
+        getLabel(field) {
+          const innitialLabels = this.getInnitialDefinitions().filter((value) => value.field === field);
+          if (innitialLabels.length) {
+            return innitialLabels[0].label || field;
+          } else {
+            return field;
+          }
+        }
 
-    async getIndexPattern() {
-      this.indexPattern = {
-        ...(await this.PluginPlatformServices.indexPatterns.get(AppState.getCurrentPattern())),
-      };
-    }
+        async getIndexPattern() {
+          this.indexPattern = {
+            ...(await this.PluginPlatformServices.indexPatterns.get(AppState.getCurrentPattern())),
+          };
+        }
 
-    hideCreateCustomLabel = () => {
-      try {
-        const button = document.querySelector(
-          '.wz-discover #addFilterPopover > div > button > span > span'
-        );
-        if (!button) return setTimeout(this.hideCreateCustomLabel, 100);
-        const findAndHide = () => {
-          const switcher = document.querySelector('#filterEditorCustomLabelSwitch');
+        hideCreateCustomLabel = () => {
+          try {
+            const button = document.querySelector(
+              '.wz-discover #addFilterPopover > div > button > span > span'
+            );
+            if (!button) return setTimeout(this.hideCreateCustomLabel, 100);
+            const findAndHide = () => {
+              const switcher = document.querySelector('#filterEditorCustomLabelSwitch');
           if (!switcher) return setTimeout(findAndHide, 100);
           switcher.parentElement.style.display = 'none';
         };
         button.onclick = findAndHide;
-      } catch (error) {
-        const options = {
-          context: `${Discover.name}.hideCreateCustomLabel`,
-          level: UI_LOGGER_LEVELS.ERROR,
-          severity: UI_ERROR_SEVERITIES.BUSINESS,
-          error: {
-            error: error,
-            message: error.message || error,
-            title: error.name || error,
-          },
-        };
-        getErrorOrchestrator().handleError(options);
-      }
-    };
+} catch (error) {
+  const options = {
+    context: `${Discover.name}.hideCreateCustomLabel`,
+    level: UI_LOGGER_LEVELS.ERROR,
+    severity: UI_ERROR_SEVERITIES.BUSINESS,
+    error: {
+      error: error,
+      message: error.message || error,
+      title: error.name || error,
+    },
+  };
+  getErrorOrchestrator().handleError(options);
+}
+};
 
-    filtersAsArray(filters) {
-      const keys = Object.keys(filters);
-      const result: {}[] = [];
-      for (var i = 0; i < keys.length; i++) {
-        const item = {};
-        item[keys[i]] = filters[keys[i]];
-        result.push(item);
-      }
-      return result;
-    }
+filtersAsArray(filters) {
+const keys = Object.keys(filters);
+const result: {}[] = [];
+for (var i = 0; i < keys.length; i++) {
+  const item = {};
+  item[keys[i]] = filters[keys[i]];
+  result.push(item);
+}
+return result;
+}
 
-    toggleDetails = (item) => {
-      const itemIdToExpandedRowMap = { ...this.state.itemIdToExpandedRowMap };
-      const { rowDetailsFields } = this.props;
+toggleDetails = (item) => {
+const itemIdToExpandedRowMap = { ...this.state.itemIdToExpandedRowMap };
+const { rowDetailsFields } = this.props;
 
-      if (itemIdToExpandedRowMap[item._id]) {
-        delete itemIdToExpandedRowMap[item._id];
-        this.setState({ itemIdToExpandedRowMap });
-      } else {
-        const newItemIdToExpandedRowMap = {};
-        newItemIdToExpandedRowMap[item._id] = (
-          <div style={{ width: '100%' }}>
-            {' '}
-            <RowDetails
-              item={item}
-              addFilter={(filter) => this.addFilter(filter)}
-              addFilterOut={(filter) => this.addFilterOut(filter)}
-              toggleColumn={(id) => this.addColumn(id)}
-              rowDetailsFields={rowDetailsFields}
-              indexPattern={this.indexPattern}
-            />
-          </div>
-        );
-        this.setState({ itemIdToExpandedRowMap: newItemIdToExpandedRowMap });
-      }
-    };
+if (itemIdToExpandedRowMap[item._id]) {
+  delete itemIdToExpandedRowMap[item._id];
+  this.setState({ itemIdToExpandedRowMap });
+} else {
+  const newItemIdToExpandedRowMap = {};
+  newItemIdToExpandedRowMap[item._id] = (
+    <div style={{ width: '100%' }}>
+      {' '}
+      <RowDetails
+        item={item}
+        addFilter={(filter) => this.addFilter(filter)}
+        addFilterOut={(filter) => this.addFilterOut(filter)}
+        toggleColumn={(id) => this.addColumn(id)}
+        rowDetailsFields={rowDetailsFields}
+        indexPattern={this.indexPattern}
+      />
+    </div>
+  );
+  this.setState({ itemIdToExpandedRowMap: newItemIdToExpandedRowMap });
+}
+};
 
-    buildFilter() {
-      const dateParse = (ds) =>
-        /\d+-\d+-\d+T\d+:\d+:\d+.\d+Z/.test(ds) ? DateMatch.parse(ds).toDate().getTime() : ds;
-      const { query } = this.state;
-      const { hideManagerAlerts } = this.wazuhConfig.getConfig();
-      const extraFilters = [];
-      if (hideManagerAlerts)
-        extraFilters.push({
-          meta: {
-            alias: null,
-            disabled: false,
-            key: 'agent.id',
-            negate: true,
-            params: { query: '000' },
-            type: 'phrase',
-            index: this.indexPattern.title,
-          },
-          query: { match_phrase: { 'agent.id': '000' } },
-          $state: { store: 'appState' },
-        });
+buildFilter() {
+const dateParse = (ds) =>
+  /\d+-\d+-\d+T\d+:\d+:\d+.\d+Z/.test(ds) ? DateMatch.parse(ds).toDate().getTime() : ds;
+const { query } = this.state;
+const { hideManagerAlerts } = this.wazuhConfig.getConfig();
+const extraFilters = [];
+if (hideManagerAlerts)
+  extraFilters.push({
+    meta: {
+      alias: null,
+      disabled: false,
+      key: 'agent.id',
+      negate: true,
+      params: { query: '000' },
+      type: 'phrase',
+      index: this.indexPattern.title,
+    },
+    query: { match_phrase: { 'agent.id': '000' } },
+    $state: { store: 'appState' },
+  });
 
-      const filters = this.props.shareFilterManager
-        ? this.props.shareFilterManager.getFilters()
-        : [];
-      const previousFilters =
-        (this.PluginPlatformServices && this.PluginPlatformServices.query.filterManager.getFilters()) || [];
-      const elasticQuery = buildOpenSearchQuery(
-        this.indexPattern,
-        query,
-        _.union(
-          previousFilters,
-          filters,
-          extraFilters,
-          this.props.shareFilterManagerWithUserAuthorized || []
-        ),
-        getOpenSearchQueryConfig(getUiSettings())
-      );
+const filters = this.props.shareFilterManager
+  ? this.props.shareFilterManager.getFilters()
+  : [];
+const previousFilters =
+  (this.PluginPlatformServices && this.PluginPlatformServices.query.filterManager.getFilters()) || [];
+const elasticQuery = buildOpenSearchQuery(
+  this.indexPattern,
+  query,
+  _.union(
+    previousFilters,
+    filters,
+    extraFilters,
+    this.props.shareFilterManagerWithUserAuthorized || []
+  ),
+  getOpenSearchQueryConfig(getUiSettings())
+);
 
-      const { sortField, sortDirection } = this.state;
+const { sortField, sortDirection } = this.state;
 
-      const range = {
-        range: {
-          timestamp: {
-            gte: dateParse(this.state.dateRange.from),
-            lte: dateParse(this.state.dateRange.to),
-            format: 'epoch_millis',
-          },
-        },
-      };
-      elasticQuery.bool.must.push(range);
+const range = {
+  range: {
+    timestamp: {
+      gte: dateParse(this.state.dateRange.from),
+      lte: dateParse(this.state.dateRange.to),
+      format: 'epoch_millis',
+    },
+  },
+};
+elasticQuery.bool.must.push(range);
 
-      if (this.props.implicitFilters) {
-        this.props.implicitFilters.map((impicitFilter) =>
-          elasticQuery.bool.must.push({
-            match: impicitFilter,
-          })
-        );
-      }
-      if (this.props.currentAgentData.id) {
-        elasticQuery.bool.must.push({
-          match: { 'agent.id': this.props.currentAgentData.id },
-        });
-      }
-      return {
-        query: elasticQuery,
-        size: this.state.pageSize,
-        from: this.state.pageIndex * this.state.pageSize,
-        ...(sortField ? { sort: { [sortField]: { order: sortDirection } } } : {}),
-      };
-    }
+if (this.props.implicitFilters) {
+  this.props.implicitFilters.map((impicitFilter) =>
+    elasticQuery.bool.must.push({
+      match: impicitFilter,
+    })
+  );
+}
+if (this.props.currentAgentData.id) {
+  elasticQuery.bool.must.push({
+    match: { 'agent.id': this.props.currentAgentData.id },
+  });
+}
+return {
+  query: elasticQuery,
+  size: this.state.pageSize,
+  from: this.state.pageIndex * this.state.pageSize,
+  ...(sortField ? { sort: { [sortField]: { order: sortDirection } } } : {}),
+};
+}
 
-    async getAlerts() {
-      if (!this.indexPattern || this.state.isLoading) return;
-      //compare filters so we only make a request into Elasticsearch if needed
-      try {
-        this.setState({ isLoading: true });
-        const newFilters = this.buildFilter();
-        const alerts = await GenericRequest.request('POST', `/elastic/alerts`, {
-          index: this.indexPattern.title,
-          body: newFilters,
-        });
-        if (this._isMount) {
-          this.setState({
-            alerts: alerts.data.hits.hits,
-            total: alerts.data.hits.total.value,
-            isLoading: false,
-          });
+async getAlerts() {
+if (!this.indexPattern || this.state.isLoading) return;
+//compare filters so we only make a request into Elasticsearch if needed
+try {
+  this.setState({ isLoading: true });
+  const newFilters = this.buildFilter();
+  const alerts = await GenericRequest.request('POST', `/elastic/alerts`, {
+    index: this.indexPattern.title,
+    body: newFilters,
+  });
+  if (this._isMount) {
+    this.setState({
+      alerts: alerts.data.hits.hits,
+      total: alerts.data.hits.total.value,
+      isLoading: false,
+    });
           this.props.updateTotalHits(alerts.data.hits.total.value);
         }
-      } catch (error) {
+      }    catch (error) {
         if (this._isMount) {
           this.setState({ alerts: [], total: 0, isLoading: false });
           this.props.updateTotalHits(0);
@@ -434,21 +434,21 @@ export const Discover = compose(
         return;
       }
       const columns = this.state.columns;
-      columns.splice(
+            columns.splice(
         columns.findIndex((v) => v === id),
         1
       );
       this.setState(columns);
     }
 
-    addColumn(id) {
-      if (this.state.columns.length > 11) {
-        this.showToast('warning', 'The maximum number of columns is 10', 3000);
-        return;
-      }
-      if (this.state.columns.find((element) => element === id)) {
-        this.removeColumn(id);
-        return;
+  addColumn(id) {
+    if (this.state.columns.length > 11) {
+      this.showToast('warning', 'The maximum number of columns is 10', 3000);
+      return;
+    }
+    if (this.state.columns.find((element) => element === id)) {
+      this.removeColumn(id);
+      return;
       }
       const columns = this.state.columns;
       columns.push(id);
